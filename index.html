@@ -28,20 +28,11 @@
         }
         .map-container {
             flex: 1;
-            background-color: #e5e3df;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        .fake-map {
-            width: 100%;
-            height: 100%;
             background: linear-gradient(135deg, #e0f7fa 25%, #80deea 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            font-size: 16px;
             color: #00796b;
             text-align: center;
             padding: 20px;
@@ -54,32 +45,57 @@
             box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
         }
         .input-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .input-group label {
             display: block;
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 4px;
+            font-size: 13px;
             color: #666;
         }
         .input-group input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
+        }
+        .tariffs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tariff-card {
+            flex: 1;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tariff-card.active {
+            border-color: #ffcc00;
+            background-color: #fff9e6;
+        }
+        .tariff-card h4 {
+            font-size: 15px;
+            margin-bottom: 5px;
+        }
+        .tariff-card p {
+            font-size: 13px;
+            color: #555;
         }
         .btn {
             width: 100%;
             background-color: #ffcc00;
             color: #000;
-            padding: 15px;
+            padding: 14px;
             border: none;
             border-radius: 8px;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
         }
         .btn:active {
             background-color: #e6b800;
@@ -90,41 +106,60 @@
 
     <header>🚗 Tez Taxi</header>
 
-    <div class="map-container">
-        <div class="fake-map" id="mapStatus">
-            GPS orqali joylashuvingiz aniqlanmoqda...
-        </div>
+    <div class="map-container" id="mapStatus">
+        GPS orqali joylashuvingiz aniqlanmoqda...
     </div>
 
     <div class="panel">
         <div class="input-group">
             <label>Qayerdan (Ketish nuqtasi)</label>
-            <input type="text" id="pickup" placeholder="Hozirgi turgan joyingiz">
+            <input type="text" id="pickup" value="Joriy turgan joyim">
         </div>
         <div class="input-group">
             <label>Qayerga (Borish manzili)</label>
-            <input type="text" id="destination" placeholder="Manzilni kiriting">
+            <input type="text" id="destination" placeholder="Masalan: Bozor yoki Universitet">
         </div>
+
+        <label style="font-size: 13px; color: #666; margin-bottom: 5px; display: block;">Tarifni tanlang:</label>
+        <div class="tariffs">
+            <div class="tariff-card active" onclick="selectTariff('Ekonom', 10000)">
+                <h4>Ekonom</h4>
+                <p>10,000 so'm</p>
+            </div>
+            <div class="tariff-card" onclick="selectTariff('Komfort', 18000)">
+                <h4>Komfort</h4>
+                <p>18,000 so'm</p>
+            </div>
+        </div>
+
         <button class="btn" onclick="orderTaxi()">Mashina chaqirish</button>
     </div>
 
     <script>
-        // Oddiy geolokatsiyani simulyatsiya qilish yoki aniqlash
+        let selectedTariffName = "Ekonom";
+        let selectedTariffPrice = 10000;
+
+        function selectTariff(name, price) {
+            selectedTariffName = name;
+            selectedTariffPrice = price;
+            
+            // Kartalarning dizaynini o'zgartirish
+            let cards = document.querySelectorAll('.tariff-card');
+            cards.forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
         window.onload = function() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('mapStatus').innerText = 
-                        "Joylashuv topildi! \nKenglik: " + position.coords.latitude.toFixed(4) + 
-                        "\nUzunlik: " + position.coords.longitude.toFixed(4);
-                    document.getElementById('pickup').value = "Joriy turgan joyim (GPS)";
+                    document.getElementById('mapStatus').innerText = "Joylashuv aniqlandi! Xarita tayyor.";
                 }, function(error) {
-                    document.getElementById('mapStatus').innerText = "Manzilni qo'lda kiriting (GPS o'chiq)";
+                    document.getElementById('mapStatus').innerText = "Manzilni qo'lda kiriting";
                 });
             }
         };
 
         function orderTaxi() {
-            let pickup = document.getElementById('pickup').value;
             let destination = document.getElementById('destination').value;
 
             if(!destination) {
@@ -132,7 +167,7 @@
                 return;
             }
 
-            alert("Buyurtma qabul qilindi! Haydovchi qidirilmoqda...\nYo'nalish: " + pickup + " ➔ " + destination);
+            alert("Buyurtma qabul qilindi! 🎉\nTarif: " + selectedTariffName + "\nNarxi: " + selectedTariffPrice.toLocaleString() + " so'm\nHaydovchi qidirilmoqda...");
         }
     </script>
 
