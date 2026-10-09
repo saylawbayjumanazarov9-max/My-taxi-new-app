@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Taxi - VIP</title>
+    <title>My Taxi - VIP Ultimate</title>
     <!-- Leaflet Xarita CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -38,155 +38,28 @@
         }
         .panel {
             background: #ffffff;
-            padding: 20px;
+            padding: 18px;
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
             box-shadow: 0 -6px 20px rgba(0,0,0,0.1);
             z-index: 1000;
+            max-height: 55vh;
+            overflow-y: auto;
         }
-        .input-group {
+        /* Tezkor manzillar (Uy / Ish) */
+        .quick-destinations {
+            display: flex;
+            gap: 8px;
             margin-bottom: 12px;
-            position: relative;
         }
-        .input-group label {
-            display: block;
-            margin-bottom: 4px;
+        .quick-btn {
+            flex: 1;
+            background: #fdf2f4;
+            border: 1px solid #f2d6dc;
+            padding: 6px;
+            border-radius: 8px;
             font-size: 12px;
-            color: #666;
+            color: #800020;
             font-weight: 600;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-            background: #fdfdfd;
-            transition: border 0.2s;
-        }
-        .input-group input:focus {
-            border-color: #800020;
-            background: #fff;
-        }
-        .search-hint {
-            font-size: 11px;
-            color: #888;
-            margin-top: 3px;
-        }
-        .tariffs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .tariff-card {
-            flex: 1;
-            border: 2px solid #e0e0e0;
-            padding: 10px;
-            border-radius: 12px;
-            text-align: center;
             cursor: pointer;
-            transition: 0.2s;
-            background: #fff;
-        }
-        .tariff-card.active {
-            border-color: #800020;
-            background-color: #fdf2f4;
-        }
-        .tariff-card h4 {
-            font-size: 15px;
-            margin-bottom: 4px;
-            color: #800020;
-        }
-        .tariff-card p {
-            font-size: 12px;
-            color: #555;
-            font-weight: bold;
-        }
-        /* To'lov usullari bloki */
-        .payment-methods {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-        .pay-card {
-            flex: 1;
-            border: 1px solid #ddd;
-            padding: 8px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 13px;
-            cursor: pointer;
-            background: #f9f9f9;
-            transition: 0.2s;
-        }
-        .pay-card.active {
-            border-color: #800020;
-            background-color: #fdf2f4;
-            color: #800020;
-            font-weight: bold;
-        }
-        .btn {
-            width: 100%;
-            background-color: #800020;
-            color: #fff;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-        }
-        .btn:active {
-            background-color: #5c0015;
-            transform: scale(0.98);
-        }
-        /* Modal oyna */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            z-index: 2000;
-        }
-        .modal-content {
-            background: white;
-            padding: 25px;
-            border-radius: 20px;
-            text-align: center;
-            width: 100%;
-            max-width: 330px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #800020;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            animation: spin 1s linear infinite;
-            margin: 15px auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-
-    <header>🚗 My Taxi VIP</header>
-
-    <!-- Xarita -->
-    <div id="map"></div>
-
-    <!-- Boshqaruv Paneli -->
-    <div class="panel">
-        <div class="input-group">
-            <label>Qayerdan (Ketish nuqtasi)</label>
-            <input type="text" id="pickup" placeholder="Masalan: Berdaq ko'chasi..." onchange="searchLocation('pickup')">
             
