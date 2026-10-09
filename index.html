@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Taksi</title>
+    <title>Tez Taxi - VIP</title>
     <!-- Leaflet Xarita CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -14,68 +14,81 @@
             font-family: Arial, sans-serif;
         }
         body {
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
             color: #333;
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
-        /* Xarita */
+        header {
+            background-color: #800020; /* Bardoviy rang */
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        /* Xarita ekranni egallashi uchun */
         #map {
             flex: 1;
             width: 100%;
             z-index: 1;
         }
+        /* GPS navigatsiya tugmasi (Xaritaning o'ng chetida) */
+        .gps-btn {
+            position: absolute;
+            right: 20px;
+            bottom: 240px;
+            background: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 1500;
+            transition: background 0.2s;
+        }
+        .gps-btn:active {
+            background: #f0f0f0;
+        }
+
         /* Pastki boshqaruv paneli */
         .panel {
             background: #ffffff;
-            padding: 20px 15px;
+            padding: 20px;
             border-top-left-radius: 24px;
             border-top-right-radius: 24px;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.08);
             z-index: 1000;
         }
-        .input-box {
-            background: #f0f0f0;
-            border-radius: 12px;
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .input-box input {
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            width: 100%;
-            outline: none;
-            color: #333;
-        }
-        /* Kategoriya menyusi (Navigator, Taksi, va h.k.) */
-        .categories {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto;
-            padding-bottom: 10px;
+        .input-group {
             margin-bottom: 12px;
-            scrollbar-width: none;
         }
-        .categories::-webkit-scrollbar {
-            display: none;
+        .input-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #666;
         }
-        .cat-item {
-            font-size: 14px;
-            color: #777;
-            cursor: pointer;
-            white-space: nowrap;
-            padding-bottom: 4px;
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            background: #fff;
         }
-        .cat-item.active {
-            color: #000;
-            font-weight: bold;
-            border-bottom: 2px solid #ffcc00;
+        .input-group input:focus {
+            border-color: #800020;
         }
         /* Tariflar */
         .tariffs {
@@ -85,61 +98,124 @@
         }
         .tariff-card {
             flex: 1;
-            background: #f7f7f7;
-            border: 2px solid transparent;
-            padding: 12px;
-            border-radius: 12px;
+            border: 2px solid #ddd;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
             cursor: pointer;
             transition: 0.2s;
+            background: #fff;
         }
         .tariff-card.active {
-            border-color: #ffcc00;
-            background: #fffdf0;
+            border-color: #800020;
+            background-color: #fdf2f4;
         }
         .tariff-card h4 {
             font-size: 15px;
             margin-bottom: 4px;
-            color: #000;
+            color: #800020;
         }
         .tariff-card p {
             font-size: 12px;
-            color: #666;
+            color: #555;
         }
-        /* Pastki tugma paneli */
-        .bottom-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .btn-order {
-            flex: 1;
-            background-color: #ffcc00;
-            color: #000;
-            padding: 16px;
+        /* Bardoviy Buyurtma berish tugmasi */
+        .btn {
+            width: 100%;
+            background-color: #800020;
+            color: #fff;
+            padding: 15px;
             border: none;
-            border-radius: 14px;
-            font-size: 18px;
+            border-radius: 10px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
+            transition: background 0.2s;
         }
-        .btn-order:active {
-            background-color: #e6b800;
+        .btn:active {
+            background-color: #5c0015;
         }
-        .icon-btn {
-            background: #f0f0f0;
-            border: none;
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 20px;
-        }
-        /* Modal */
+        /* Haydovchi qidirish oyna (Modal) */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; width: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #800020;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>🚗 Tez Taxi VIP</header>
+
+    <!-- Xarita -->
+    <div id="map"></div>
+
+    <!-- GPS Navigatsiya tugmasi (Xarita ustida) -->
+    <button class="gps-btn" onclick="goToCurrentLocation()" title="Mening joylashuvim">📍</button>
+
+    <!-- Pastki Panel -->
+    <div class="panel">
+        <div class="input-group">
+            <label>Qayerdan (Ketish nuqtasi)</label>
+            <input type="text" id="pickup" value="Joriy turgan joyim (GPS)">
+        </div>
+        <div class="input-group">
+            <label>Qayerga (Borish manzili)</label>
+            <input type="text" id="destination" placeholder="Masalan: Bozor yoki ko'cha nomi">
+        </div>
+
+        <label style="font-size: 13px; color: #666; margin-bottom: 5px; display: block;">Tarifni tanlang:</label>
+        <div class="tariffs">
+            <div class="tariff-card active" onclick="selectTariff('Ekonom', 10000)">
+                <h4>Ekonom</h4>
+                <p>10,000 so'm</p>
+            </div>
+            <div class="tariff-card" onclick="selectTariff('Komfort', 18000)">
+                <h4>Komfort</h4>
+                <p>18,000 so'm</p>
+            </div>
+        </div>
+
+        <button class="btn" onclick="orderTaxi()">Mashina chaqirish</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="color: #800020;">Haydovchi qidirilmoqda...</h3>
+            <div class="spinner" id="modalSpinner"></div>
+            <p id="modalText" style="font-size: 14px; color: #666; margin-top: 10px;">Atrofdagi bo'sh haydovchilarga so'rov yuborilmoqda.</p>
+            <button class="btn" id="cancelBtn" onclick="closeModal()" style="margin-top: 15px; background: #ddd; color: #333;">Bekor qilish</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let selectedTariffName = "
