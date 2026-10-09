@@ -3,37 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Taxi - VIP Pro</title>
+    <title>My Taxi - VIP Ultimate Pro</title>
+    <!-- Leaflet Xarita CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        :root {
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --primary-color: #800020;
+            --border-color: #ddd;
+            --input-bg: #fafafa;
+        }
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f1f1f1;
+            --primary-color: #a30029;
+            --border-color: #333;
+            --input-bg: #2a2a2a;
         }
         body {
-            background-color: #f4f4f4;
-            color: #333;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            transition: background 0.3s, color 0.3s;
         }
         header {
-            background-color: #800020;
+            background-color: var(--primary-color);
             color: #fff;
-            padding: 15px;
+            padding: 12px 14px;
             text-align: center;
-            font-size: 18px;
+            font-size: 17px;
             font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
-        /* Asosiy kontent qismi */
+        .header-controls {
+            display: flex;
+            gap: 6px;
+        }
+        .control-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #fff;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
         .content {
             flex: 1;
             overflow-y: auto;
-            padding: 15px;
-            padding-bottom: 70px; /* Pastki menyu yopib qo'ymasligi uchun */
+            padding: 10px;
+            padding-bottom: 70px;
         }
         .tab-content {
             display: none;
@@ -42,52 +77,76 @@
             display: block;
         }
         .card {
-            background: #fff;
-            padding: 15px;
-            border-radius: 14px;
+            background: var(--card-bg);
+            padding: 12px;
+            border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+        }
+        #map {
+            width: 100%;
+            height: 150px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            z-index: 1;
+        }
+        .saved-places {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            margin-bottom: 8px;
+            padding-bottom: 4px;
+        }
+        .place-chip {
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            color: var(--primary-color);
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
         }
         .input-group {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .input-group label {
             display: block;
             font-size: 11px;
-            color: #666;
-            margin-bottom: 4px;
+            color: #888;
+            margin-bottom: 3px;
             font-weight: bold;
         }
-        .input-group input {
+        .input-group input, .input-group select {
             width: 100%;
-            padding: 11px;
-            border: 1px solid #ddd;
+            padding: 9px;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
-            background: #fafafa;
-        }
-        .input-group input:focus {
-            border-color: #800020;
-            background: #fff;
+            background: var(--input-bg);
+            color: var(--text-color);
         }
         .tariffs {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         .tariff-btn {
             flex: 1;
-            padding: 10px 6px;
-            border: 2px solid #ddd;
+            padding: 8px 4px;
+            border: 2px solid var(--border-color);
             border-radius: 8px;
-            background: #fff;
+            background: var(--card-bg);
             text-align: center;
             cursor: pointer;
+            color: var(--text-color);
         }
         .tariff-btn.active {
-            border-color: #800020;
-            background: #fdf2f4;
-            color: #800020;
+            border-color: var(--primary-color);
+            background-color: rgba(128, 0, 32, 0.08);
+            color: var(--primary-color);
             font-weight: bold;
         }
         .payment-methods {
@@ -97,42 +156,41 @@
         .pay-btn {
             flex: 1;
             padding: 8px 4px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            background: #f9f9f9;
+            background: var(--input-bg);
             text-align: center;
             font-size: 11px;
             cursor: pointer;
+            color: var(--text-color);
         }
         .pay-btn.active {
-            border-color: #800020;
-            background: #fdf2f4;
-            color: #800020;
+            border-color: var(--primary-color);
+            background-color: rgba(128, 0, 32, 0.08);
+            color: var(--primary-color);
             font-weight: bold;
         }
         .btn {
             width: 100%;
-            background-color: #800020;
+            background-color: var(--primary-color);
             color: #fff;
-            padding: 14px;
+            padding: 12px;
             border: none;
             border-radius: 10px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 4px;
         }
-        /* Pastki Navigatsiya Menyu */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 60px;
-            background: #ffffff;
+            background: var(--card-bg);
             display: flex;
-            border-top: 1px solid #ddd;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            border-top: 1px solid var(--border-color);
             z-index: 1000;
         }
         .nav-item {
@@ -142,40 +200,42 @@
             align-items: center;
             justify-content: center;
             font-size: 11px;
-            color: #777;
+            color: #888;
             cursor: pointer;
-            transition: 0.2s;
         }
         .nav-item.active {
-            color: #800020;
+            color: var(--primary-color);
             font-weight: bold;
         }
         .nav-item span {
-            font-size: 18px;
+            font-size: 16px;
             margin-bottom: 2px;
         }
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             align-items: center;
             justify-content: center;
             padding: 20px;
             z-index: 2000;
         }
         .modal-content {
-            background: white;
+            background: var(--card-bg);
+            color: var(--text-color);
             padding: 20px;
             border-radius: 14px;
             text-align: center;
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #800020;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
             width: 35px;
             height: 35px;
@@ -186,67 +246,120 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        .history-item {
-            background: #fafafa;
+        .history-item, .fav-item {
+            background: var(--input-bg);
             padding: 10px;
             border-radius: 8px;
             margin-bottom: 8px;
-            border-left: 4px solid #800020;
-            font-size: 13px;
+            border-left: 4px solid var(--primary-color);
+            font-size: 12px;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stars {
+            font-size: 24px;
+            color: #ccc;
+            cursor: pointer;
+            margin: 8px 0;
+        }
+        .stars span.rated {
+            color: #ffc107;
+        }
+        .chat-box {
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 12px;
+            text-align: left;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+        .chat-btn-group {
+            display: flex;
+            gap: 4px;
+            margin-top: 5px;
+        }
+        .chat-quick-btn {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            font-size: 10px;
+            padding: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--primary-color);
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
 
-    <header id="headerTitle">🚗 My Taxi - Asosiy</header>
+    <header>
+        <span id="headerTitle">🚗 My Taxi VIP</span>
+        <div class="header-controls">
+            <select id="langSelect" onchange="changeLanguage()" style="background: rgba(255,255,255,0.2); color: #fff; border: none; padding: 4px; border-radius: 6px; font-size: 11px;">
+                <option value="uz" style="color: #333;">O'zbek</option>
+                <option value="qq" style="color: #333;">Qaraqalpaq</option>
+                <option value="ru" style="color: #333;">Русский</option>
+            </select>
+            <button class="control-btn" onclick="toggleTheme()">🌙</button>
+        </div>
+    </header>
 
-    <!-- Kontent Qismi -->
     <div class="content">
-        
-        <!-- 1. ASOSIY SAHIFA (BUYURTMA) -->
+        <!-- 1. ASOSIY SAHIFA -->
         <div id="tab-home" class="tab-content active">
             <div class="card">
+                <div id="map"></div>
+                
+                <!-- Sevimli manzillar chips -->
+                <div class="saved-places" id="chipsContainer">
+                    <div class="place-chip" onclick="setDestination('Universitet')">🏠 Universitet</div>
+                    <div class="place-chip" onclick="setDestination('Bozor Markazi')">🏢 Bozor</div>
+                </div>
+
                 <div class="input-group">
-                    <label>Qayerdan (Ketish nuqtasi)</label>
-                    <input type="text" id="pickup" value="Nukus shahri" placeholder="Manzilni kiriting">
+                    <label id="lblPickup">Qayerdan</label>
+                    <input type="text" id="pickup" value="Nukus shahri" placeholder="Ketish manzili">
                 </div>
                 <div class="input-group">
-                    <label>Qayerga (Borish manzili)</label>
-                    <input type="text" id="destination" placeholder="Masalan: Bozor, Universitet">
+                    <label id="lblDest">Qayerga</label>
+                    <input type="text" id="destination" placeholder="Borish manzili" onchange="searchLocation()">
                 </div>
             </div>
 
             <div class="card">
-                <div class="input-group">
-                    <label>Haydovchiga eslatma (Ixtiyoriy)</label>
-                    <input type="text" id="comment" placeholder="Masalan: Yukim bor, shoshilyapman">
-                </div>
-                <div class="input-group" style="margin-bottom: 0;">
-                    <label>Promo-kod</label>
-                    <input type="text" id="promocode" placeholder="Chegirma uchun: VIP2026">
+                <div class="input-group" style="margin-bottom: 6px;">
+                    <label id="lblExtra">Eslatma / Promo-kod</label>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="text" id="comment" placeholder="Eslatma (yukim bor)" style="flex: 2;">
+                        <input type="text" id="promocode" placeholder="VIP2026" style="flex: 1;">
+                    </div>
                 </div>
             </div>
 
             <div class="card">
-                <label style="font-size: 11px; color: #666; margin-bottom: 6px; display: block; font-weight: bold;">Tarifni tanlang:</label>
+                <label id="lblTariff" style="font-size: 11px; color: #888; margin-bottom: 6px; display: block; font-weight: bold;">Tarif:</label>
                 <div class="tariffs">
                     <div class="tariff-btn active" onclick="selectTariff('Ekonom', 10000, this)">
-                        <div style="font-size: 13px;">Ekonom</div>
-                        <div style="font-size: 11px; color: #555; margin-top: 2px;">10,000 so'm</div>
+                        <div style="font-size: 12px;">Ekonom</div>
+                        <div style="font-size: 10px; color: #888;">10 ming</div>
                     </div>
                     <div class="tariff-btn" onclick="selectTariff('Komfort', 18000, this)">
-                        <div style="font-size: 13px;">Komfort</div>
-                        <div style="font-size: 11px; color: #555; margin-top: 2px;">18,000 so'm</div>
+                        <div style="font-size: 12px;">Komfort</div>
+                        <div style="font-size: 10px; color: #888;">18 ming</div>
                     </div>
                     <div class="tariff-btn" onclick="selectTariff('Biznes', 30000, this)">
-                        <div style="font-size: 13px;">Biznes</div>
-                        <div style="font-size: 11px; color: #555; margin-top: 2px;">30,000 so'm</div>
+                        <div style="font-size: 12px;">Biznes</div>
+                        <div style="font-size: 10px; color: #888;">30 ming</div>
                     </div>
                 </div>
             </div>
 
             <div class="card">
-                <label style="font-size: 11px; color: #666; margin-bottom: 6px; display: block; font-weight: bold;">To'lov turi:</label>
+                <label id="lblPay" style="font-size: 11px; color: #888; margin-bottom: 6px; display: block; font-weight: bold;">To'lov turi:</label>
                 <div class="payment-methods">
                     <div class="pay-btn active" onclick="selectPayment('Naqd pul', this)">💵 Naqd</div>
                     <div class="pay-btn" onclick="selectPayment('Karta', this)">💳 Karta</div>
@@ -254,81 +367,190 @@
                 </div>
             </div>
 
-            <button class="btn" onclick="orderTaxi()">Mashina chaqirish</button>
+            <button class="btn" id="btnOrder" onclick="orderTaxi()">Mashina chaqirish</button>
         </div>
 
-        <!-- 2. TARIX SAHifASI -->
+        <!-- 2. TARIX -->
         <div id="tab-history" class="tab-content">
             <div class="card">
-                <h3 style="color: #800020; font-size: 16px; margin-bottom: 10px;">Buyurtmalar tarixi</h3>
+                <h3 id="histTitle" style="color: var(--primary-color); font-size: 15px; margin-bottom: 10px;">Buyurtmalar tarixi</h3>
                 <div id="historyList">
-                    <p style="font-size: 13px; color: #888;">Hozircha buyurtmalar yo'q.</p>
+                    <p style="font-size: 12px; color: #888;">Hozircha buyurtmalar yo'q.</p>
                 </div>
             </div>
         </div>
 
-        <!-- 3. PROFIL SAHIFA -->
+        <!-- 3. SEVIMLI MANZILLAR VA PROFIL -->
         <div id="tab-profile" class="tab-content">
-            <div class="card" style="text-align: center; padding: 25px;">
-                <div style="width: 70px; height: 70px; background: #fdf2f4; color: #800020; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 10px auto; font-weight: bold;">👤</div>
-                <h3 style="color: #800020; font-size: 18px;">Foydalanuvchi</h3>
-                <p style="font-size: 13px; color: #666; margin-top: 4px;">+998 90 123 45 67</p>
+            <div class="card" style="text-align: center; padding: 15px;">
+                <div style="width: 50px; height: 50px; background: rgba(128,0,32,0.1); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin: 0 auto 6px auto; font-weight: bold;">👤</div>
+                <h3 style="font-size: 15px;">Foydalanuvchi VIP</h3>
+                <p style="font-size: 11px; color: #888;">+998 90 123 45 67</p>
                 
-                <div style="margin-top: 20px; background: #fdf2f4; padding: 12px; border-radius: 10px; display: flex; justify-content: space-around;">
+                <div style="margin-top: 10px; background: var(--input-bg); padding: 8px; border-radius: 8px; display: flex; justify-content: space-around;">
                     <div>
-                        <div style="font-size: 12px; color: #666;">Bonuslar</div>
-                        <div style="font-size: 16px; color: #800020; font-weight: bold;">5,000 so'm</div>
+                        <div style="font-size: 10px; color: #888;">Bonus</div>
+                        <div style="font-size: 13px; color: var(--primary-color); font-weight: bold;">5,000 so'm</div>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #666;">Safarar</div>
-                        <div id="tripCount" style="font-size: 16px; color: #800020; font-weight: bold;">0 ta</div>
+                        <div id="lblTrips" style="font-size: 10px; color: #888;">Safarlar</div>
+                        <div id="tripCount" style="font-size: 13px; color: var(--primary-color); font-weight: bold;">0 ta</div>
+                    </div>
+                </div>
+
+                <!-- Shaxsiy Promo-kod (Referral) -->
+                <div style="margin-top: 12px; text-align: left;">
+                    <label style="font-size: 11px; color: #888; font-weight: bold;">Sizning shaxsiy promo-kodingiz:</label>
+                    <div style="display: flex; gap: 6px; margin-top: 4px;">
+                        <input type="text" id="myReferral" value="VIP-ME-2026" readonly style="flex: 1; padding: 6px; font-size: 12px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-color); text-align: center; font-weight: bold;">
+                        <button onclick="alert('Promo-kod nusxalandi! Do\'stlaringizga ulashing.')" style="background: var(--primary-color); color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">Nusxalash</button>
                     </div>
                 </div>
             </div>
-        </div>
 
+            <!-- Sevimli manzillarni qo'shish kartasi -->
+            <div class="card">
+                <h3 style="color: var(--primary-color); font-size: 14px; margin-bottom: 8px;">Sevimli manzil qo'shish</h3>
+                <div class="input-group">
+                    <input type="text" id="favName" placeholder="Manzil nomi (Masalan: Uyim)">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="favAddress" placeholder="Ko'cha yoki mo'ljal">
+                </div>
+                <button class="btn" onclick="addFavorite()" style="padding: 10px; font-size: 13px;">Saqlash</button>
+                
+                <div id="favList" style="margin-top: 10px;">
+                    <!-- Saqlanganlar chiqadi -->
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Pastki Navigatsiya Menyu -->
+    <!-- Pastki Navigatsiya -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('home', '🚗 My Taxi - Asosiy', this)">
+        <div class="nav-item active" onclick="switchTab('home', this)" id="navHome">
             <span>🏠</span>Asosiy
         </div>
-        <div class="nav-item" onclick="switchTab('history', '📜 My Taxi - Tarix', this)">
+        <div class="nav-item" onclick="switchTab('history', this)" id="navHist">
             <span>📜</span>Tarix
         </div>
-        <div class="nav-item" onclick="switchTab('profile', '👤 My Taxi - Profil', this)">
+        <div class="nav-item" onclick="switchTab('profile', this)" id="navProf">
             <span>👤</span>Profil
         </div>
     </div>
 
-    <!-- Modal Oyna -->
+    <!-- Modal Qidiruv, Taymer, Chat va Baholash -->
     <div class="modal" id="searchModal">
         <div class="modal-content">
-            <h3 id="modalTitle" style="color: #800020; margin-bottom: 5px;">Haydovchi qidirilmoqda...</h3>
+            <h3 id="modalTitle" style="color: var(--primary-color); margin-bottom: 5px; font-size: 15px;">Haydovchi qidirilmoqda...</h3>
             <div class="spinner" id="modalSpinner"></div>
-            <p id="modalText" style="font-size: 13px; color: #666; margin-top: 5px;">Kuting...</p>
-            <button class="btn" id="cancelBtn" onclick="closeModal()" style="margin-top: 10px; background: #ddd; color: #333; padding: 10px;">Bekor qilish</button>
+            <p id="modalText" style="font-size: 12px; color: #888; margin-top: 5px;">Kuting...</p>
+            
+            <div id="timerContainer" style="font-size: 15px; font-weight: bold; color: var(--primary-color); margin: 6px 0; display: none;">
+                ⏳ Kelish vaqti: <span id="timer">03:00</span>
+            </div>
+
+            <!-- Tezkor chat bo'limi -->
+            <div id="chatSection" style="display: none;">
+                <div class="chat-box" id="chatBox">
+                    <b>Timur aka (Haydovchi):</b> Assalomu alaykum, yo'lga chiqdim!
+                </div>
+                <div class="chat-btn-group">
+                    <button class="chat-quick-btn" onclick="sendQuickMsg('Men chiqdim!')">Men chiqdim</button>
+                    <button class="chat-quick-btn" onclick="sendQuickMsg('Kutib turing')">Kutib turing</button>
+                    <button class="chat-quick-btn" onclick="sendQuickMsg('Qayerdasiz?')">Qayerdasiz?</button>
+                </div>
+            </div>
+
+            <div id="ratingSection" style="display: none;">
+                <div class="stars" id="starContainer">
+                    <span onclick="rateDriver(1)">★</span>
+                    <span onclick="rateDriver(2)">★</span>
+                    <span onclick="rateDriver(3)">★</span>
+                    <span onclick="rateDriver(4)">★</span>
+                    <span onclick="rateDriver(5)">★</span>
+                </div>
+                <p id="rateMsg" style="font-size: 11px; color: #888; margin-bottom: 6px;">Haydovchiga baho bering</p>
+            </div>
+
+            <button class="btn" id="cancelBtn" onclick="closeModal()" style="margin-top: 8px; background: #ddd; color: #333; padding: 10px; font-size: 14px;">Bekor qilish</button>
         </div>
     </div>
 
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let selectedTariff = "Ekonom";
         let selectedPrice = 10000;
         let selectedPayment = "Naqd pul";
         let ordersHistory = JSON.parse(localStorage.getItem('taxi_history')) || [];
+        let favoritePlaces = JSON.parse(localStorage.getItem('taxi_favorites')) || [
+            {name: "Universitet", address: "Universitet"},
+            {name: "Bozor", address: "Bozor Markazi"}
+        ];
+        let currentLang = 'uz';
+        let countdownInterval;
 
-        function switchTab(tabId, titleText, element) {
+        const translations = {
+            uz: { title: "🚗 My Taxi VIP", home: "Asosiy", hist: "Tarix", prof: "Profil", pickup: "Qayerdan", dest: "Qayerga", extra: "Eslatma / Promo-kod", tariff: "Tarif:", pay: "To'lov turi:", order: "Mashina chaqirish", histTitle: "Buyurtmalar tarixi", trips: "Safarlar" },
+            qq: { title: "🚗 My Taxi VIP", home: "Baslı", hist: "Tariyx", prof: "Profil", pickup: "Qayerden", dest: "Qayerge", extra: "Eskertpe / Promo-kod", tariff: "Tarif:", pay: "Tólelim túri:", order: " Mashina shaqırıw", histTitle: "Búyirtmalar tariyxı", trips: "Saparlar" },
+            ru: { title: "🚗 My Taxi VIP", home: "Главная", hist: "История", prof: "Профиль", pickup: "Откуда", dest: "Куда", extra: "Примечание / Промокод", tariff: "Тариф:", pay: "Оплата:", order: "Вызвать такси", histTitle: "История заказов", trips: "Поездки" }
+        };
+
+        function changeLanguage() {
+            currentLang = document.getElementById('langSelect').value;
+            let t = translations[currentLang];
+            document.getElementById('headerTitle').innerText = t.title;
+            document.getElementById('navHome').innerHTML = `<span>🏠</span>${t.home}`;
+            document.getElementById('navHist').innerHTML = `<span>📜</span>${t.hist}`;
+            document.getElementById('navProf').innerHTML = `<span>👤</span>${t.prof}`;
+            document.getElementById('lblPickup').innerText = t.pickup;
+            document.getElementById('lblDest').innerText = t.dest;
+            document.getElementById('lblExtra').innerText = t.extra;
+            document.getElementById('lblTariff').innerText = t.tariff;
+            document.getElementById('lblPay').innerText = t.pay;
+            document.getElementById('btnOrder').innerText = t.order;
+            document.getElementById('histTitle').innerText = t.histTitle;
+            document.getElementById('lblTrips').innerText = t.trips;
+        }
+
+        let map = L.map('map').setView([42.4619, 59.6166], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+        let marker = L.marker([42.4619, 59.6166]).addTo(map);
+        setTimeout(() => { map.invalidateSize(); }, 300);
+
+        function toggleTheme() {
+            let body = document.body;
+            body.setAttribute('data-theme', body.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+        }
+
+        function switchTab(tabId, element) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
             document.getElementById('tab-' + tabId).classList.add('active');
             element.classList.add('active');
-            document.getElementById('headerTitle').innerText = titleText;
+            if(tabId === 'history') renderHistory();
+            if(tabId === 'profile') renderFavorites();
+            if(tabId === 'home') setTimeout(() => { map.invalidateSize(); }, 200);
+        }
 
-            if(tabId === 'history') {
-                renderHistory();
-            }
+        function setDestination(placeName) {
+            document.getElementById('destination').value = placeName;
+            searchLocation();
+        }
+
+        function searchLocation() {
+            let query = document.getElementById('destination').value;
+            if (!query) return;
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Nukus, Uzbekistan")}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        map.setView([data[0].lat, data[0].lon], 15);
+                        marker.setLatLng([data[0].lat, data[0].lon]);
+                        document.getElementById('destination').value = data[0].name || query;
+                    }
+                }).catch(err => console.log(err));
         }
 
         function selectTariff(name, price, element) {
@@ -344,6 +566,55 @@
             element.classList.add('active');
         }
 
+        // Sevimli manzillarni boshqarish
+        function addFavorite() {
+            let name = document.getElementById('favName').value.trim();
+            let address = document.getElementById('favAddress').value.trim();
+            if(!name || !address) {
+                alert("Iltimos, nom va manzilni kiriting!");
+                return;
+            }
+            favoritePlaces.push({name, address});
+            localStorage.setItem('taxi_favorites', JSON.stringify(favoritePlaces));
+            document.getElementById('favName').value = "";
+            document.getElementById('favAddress').value = "";
+            renderFavorites();
+            renderChips();
+        }
+
+        function deleteFavorite(index) {
+            favoritePlaces.splice(index, 1);
+            localStorage.setItem('taxi_favorites', JSON.stringify(favoritePlaces));
+            renderFavorites();
+            renderChips();
+        }
+
+        function renderFavorites() {
+            let list = document.getElementById('favList');
+            if(favoritePlaces.length === 0) {
+                list.innerHTML = '<p style="font-size: 11px; color: #888;">Saqlangan manzillar yo\'q.</p>';
+                return;
+            }
+            let html = '';
+            favoritePlaces.forEach((fav, index) => {
+                html += `<div class="fav-item">
+                    <div><b>${fav.name}</b>: ${fav.address}</div>
+                    <button onclick="deleteFavorite(${index})" style="background:none; border:none; color:red; cursor:pointer; font-size:14px;">❌</button>
+                </div>`;
+            });
+            list.innerHTML = html;
+        }
+
+        function renderChips() {
+            let container = document.getElementById('chipsContainer');
+            let html = '';
+            favoritePlaces.forEach(fav => {
+                html += `<div class="place-chip" onclick="setDestination('${fav.address}')">📍 ${fav.name}</div>`;
+            });
+            container.innerHTML = html;
+        }
+        renderChips();
+
         function orderTaxi() {
             let destination = document.getElementById('destination').value;
             let pickup = document.getElementById('pickup').value;
@@ -356,25 +627,32 @@
             }
 
             let finalPrice = selectedPrice;
-            if (promocode === "VIP2026") {
+            if (promocode === "VIP2026" || promocode === "VIP-ME-2026") {
                 finalPrice = Math.round(finalPrice * 0.8);
             }
 
             document.getElementById('searchModal').style.display = 'flex';
             document.getElementById('modalTitle').innerText = "Haydovchi qidirilmoqda...";
             document.getElementById('modalSpinner').style.display = 'block';
+            document.getElementById('timerContainer').style.display = 'none';
+            document.getElementById('chatSection').style.display = 'none';
+            document.getElementById('ratingSection').style.display = 'none';
             document.getElementById('modalText').innerText = "Tarif: " + selectedTariff + " (" + finalPrice.toLocaleString() + " so'm)\nKuting...";
             document.getElementById('cancelBtn').style.display = 'block';
 
             setTimeout(function() {
                 document.getElementById('modalSpinner').style.display = 'none';
                 document.getElementById('modalTitle').innerText = "Haydovchi topildi! 🎉";
-                document.getElementById('modalText').innerHTML = "<b>Haydovchi:</b> Anvar aka<br><b>Mashina:</b> Gentra (Oq)<br><b>Narx:</b> " + finalPrice.toLocaleString() + " so'm<br><br>⏳ <b>3 daqiqada yetib keladi.</b>";
-                document.getElementById('cancelBtn').innerText = "Yopish";
-                document.getElementById('cancelBtn').style.background = "#800020";
+                document.getElementById('modalText').innerHTML = "<b>Haydovchi:</b> Timur aka<br><b>Mashina:</b> Gentra (Oq)<br><b>Narx:</b> " + finalPrice.toLocaleString() + " so'm";
+                document.getElementById('timerContainer').style.display = 'block';
+                document.getElementById('chatSection').style.display = 'block';
+                document.getElementById('ratingSection').style.display = 'block';
+                document.getElementById('cancelBtn').innerText = "Yakunlash";
+                document.getElementById('cancelBtn').style.background = "var(--primary-color)";
                 document.getElementById('cancelBtn').style.color = "#fff";
 
-                // Tarixga qo'shish
+                startTimer(180);
+
                 let newOrder = {
                     from: pickup,
                     to: destination,
@@ -388,29 +666,65 @@
             }, 3000);
         }
 
+        function startTimer(duration) {
+            let timer = duration, minutes, seconds;
+            clearInterval(countdownInterval);
+            countdownInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                document.getElementById('timer').textContent = minutes + ":" + seconds;
+                if (--timer < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById('timerContainer').innerHTML = "⏳ Haydovchi yetib keldi!";
+                }
+            }, 1000);
+        }
+
+        function sendQuickMsg(msg) {
+            let box = document.getElementById('chatBox');
+            box.innerHTML += `<br><b>Siz:</b> ${msg}`;
+            box.scrollTop = box.scrollHeight;
+            setTimeout(() => {
+                box.innerHTML += `<br><b>Timur aka:</b> Tushunarli, turg'azdim!`;
+                box.scrollTop = box.scrollHeight;
+            }, 1500);
+        }
+
+        function rateDriver(stars) {
+            let starElements = document.querySelectorAll('#starContainer span');
+            starElements.forEach((el, index) => {
+                if(index < stars) el.classList.add('rated');
+                else el.classList.remove('rated');
+            });
+            document.getElementById('rateMsg').innerText = "Rahmat! " + stars + " yulduz berildi ⭐";
+        }
+
         function closeModal() {
+            clearInterval(countdownInterval);
             document.getElementById('searchModal').style.display = 'none';
+            document.querySelectorAll('#starContainer span').forEach(el => el.classList.remove('rated'));
+            document.getElementById('rateMsg').innerText = "Haydovchiga baho bering";
+            document.getElementById('chatBox').innerHTML = "<b>Timur aka (Haydovchi):</b> Assalomu alaykum, yo'lga chiqdim!";
         }
 
         function renderHistory() {
             let listDiv = document.getElementById('historyList');
             if(ordersHistory.length === 0) {
-                listDiv.innerHTML = '<p style="font-size: 13px; color: #888;">Hozircha buyurtmalar yo\'q.</p>';
+                listDiv.innerHTML = '<p style="font-size: 12px; color: #888;">Hozircha buyurtmalar yo\'q.</p>';
                 return;
             }
             let html = '';
             ordersHistory.forEach(item => {
                 html += `<div class="history-item">
-                    <b>${item.from} ➔ ${item.to}</b><br>
-                    Tarif: ${item.tariff} | ${item.price.toLocaleString()} so'm<br>
-                    <span style="font-size: 11px; color: #888;">Sana: ${item.date}</span>
+                    <div><b>${item.from} ➔ ${item.to}</b><br>Tarif: ${item.tariff} | ${item.price.toLocaleString()} so'm<br><span style="font-size: 10px; color: #888;">${item.date}</span></div>
                 </div>`;
             });
             listDiv.innerHTML = html;
             document.getElementById('tripCount').innerText = ordersHistory.length + " ta";
         }
 
-        // Boshlang'ich safarlar sonini yangilash
         document.getElementById('tripCount').innerText = ordersHistory.length + " ta";
     </script>
 
