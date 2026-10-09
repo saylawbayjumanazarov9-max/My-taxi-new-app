@@ -37,29 +37,6 @@
             width: 100%;
             z-index: 1;
         }
-        /* GPS navigatsiya tugmasi (Xaritaning o'ng chetida) */
-        .gps-btn {
-            position: absolute;
-            right: 20px;
-            bottom: 240px;
-            background: white;
-            border: none;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            cursor: pointer;
-            z-index: 1500;
-            transition: background 0.2s;
-        }
-        .gps-btn:active {
-            background: #f0f0f0;
-        }
-
         /* Pastki boshqaruv paneli */
         .panel {
             background: #ffffff;
@@ -90,7 +67,6 @@
         .input-group input:focus {
             border-color: #800020;
         }
-        /* Tariflar */
         .tariffs {
             display: flex;
             gap: 10px;
@@ -119,7 +95,6 @@
             font-size: 12px;
             color: #555;
         }
-        /* Bardoviy Buyurtma berish tugmasi */
         .btn {
             width: 100%;
             background-color: #800020;
@@ -135,7 +110,7 @@
         .btn:active {
             background-color: #5c0015;
         }
-        /* Haydovchi qidirish oyna (Modal) */
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -176,14 +151,11 @@
     <!-- Xarita -->
     <div id="map"></div>
 
-    <!-- GPS Navigatsiya tugmasi (Xarita ustida) -->
-    <button class="gps-btn" onclick="goToCurrentLocation()" title="Mening joylashuvim">📍</button>
-
     <!-- Pastki Panel -->
     <div class="panel">
         <div class="input-group">
-            <label>Qayerdan (Ketish nuqtasi)</label>
-            <input type="text" id="pickup" value="Joriy turgan joyim (GPS)">
+            <label>Qayerdan (Ketish nuqtasi - xaritadan bosing)</label>
+            <input type="text" id="pickup" value="Joriy turgan joyim">
         </div>
         <div class="input-group">
             <label>Qayerga (Borish manzili)</label>
@@ -218,4 +190,78 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let selectedTariffName = "
+        let selectedTariffName = "Ekonom";
+        let selectedTariffPrice = 10000;
+
+        // Xaritani ishga tushirish (Nukus shahri markazi yoki GPS)
+        let map = L.map('map').setView([42.4619, 59.6166], 14);
+
+        // Standart barqaror xarita qatlami (qotmaydi)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© Tez Taxi'
+        }).addTo(map);
+
+        let marker = L.marker([42.4619, 59.6166]).addTo(map)
+            .bindPopup('Sizning joylashuvingiz')
+            .openPopup();
+
+        // Xaritada istalgan joyni bosganda marker o'sha yerga o'tadi va "Qayerdan" maydoniga yoziladi
+        map.on('click', function(e) {
+            let lat = e.latlng.lat.toFixed(4);
+            let lon = e.latlng.lng.toFixed(4);
+            marker.setLatLng(e.latlng);
+            document.getElementById('pickup').value = "Tanlangan joy (" + lat + ", " + lon + ")";
+        });
+
+        // GPS orqali avtomatik topish
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                let lat = position.coords.latitude;
+                let lon = position.coords.longitude;
+                map.setView([lat, lon], 15);
+                marker.setLatLng([lat, lon]);
+                document.getElementById('pickup').value = "GPS joylashuv";
+            });
+        }
+
+        function selectTariff(name, price) {
+            selectedTariffName = name;
+            selectedTariffPrice = price;
+            let cards = document.querySelectorAll('.tariff-card');
+            cards.forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function orderTaxi() {
+            let destination = document.getElementById('destination').value;
+            if(!destination) {
+                alert("Iltimos, borish manzilingizni kiriting!");
+                return;
+            }
+
+            document.getElementById('searchModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = "Haydovchi qidirilmoqda...";
+            document.getElementById('modalSpinner').style.display = 'block';
+            document.getElementById('modalText').innerText = "Tarif: " + selectedTariffName + " (" + selectedTariffPrice.toLocaleString() + " so'm)\nKuting...";
+            document.getElementById('cancelBtn').style.display = 'block';
+            document.getElementById('cancelBtn').style.background = "#ddd";
+            document.getElementById('cancelBtn').style.color = "#333";
+
+            setTimeout(function() {
+                document.getElementById('modalSpinner').style.display = 'none';
+                document.getElementById('modalTitle').innerText = "Haydovchi topildi! 🎉";
+                document.getElementById('modalText').innerHTML = "<b>Haydovchi:</b> Anvar aka<br><b>Mashina:</b> Nexia 3 (Oq)<br><b>Raqam:</b> 01 A 777 BA<br><br>Haydovchi yo'lga chiqdi!";
+                document.getElementById('cancelBtn').innerText = "Yopish";
+                document.getElementById('cancelBtn').style.background = "#800020";
+                document.getElementById('cancelBtn').style.color = "#fff";
+            }, 3500);
+        }
+
+        function closeModal() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
