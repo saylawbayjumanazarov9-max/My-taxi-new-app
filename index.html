@@ -36,6 +36,7 @@
             color: #00796b;
             text-align: center;
             padding: 20px;
+            position: relative;
         }
         .panel {
             background: white;
@@ -100,6 +101,37 @@
         .btn:active {
             background-color: #e6b800;
         }
+        /* Haydovchi qidirish oyna (Modal) dizayni */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            width: 100%;
+            max-width: 320px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ffcc00;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -135,6 +167,16 @@
         <button class="btn" onclick="orderTaxi()">Mashina chaqirish</button>
     </div>
 
+    <!-- Haydovchi qidirish ekrani (Modal) -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Haydovchi qidirilmoqda...</h3>
+            <div class="spinner" id="modalSpinner"></div>
+            <p id="modalText" style="font-size: 14px; color: #666; margin-top: 10px;">Atrofdagi bo'sh haydovchilarga so'rov yuborilmoqda.</p>
+            <button class="btn" id="cancelBtn" onclick="closeModal()" style="margin-top: 15px; background: #ddd;">Bekor qilish</button>
+        </div>
+    </div>
+
     <script>
         let selectedTariffName = "Ekonom";
         let selectedTariffPrice = 10000;
@@ -142,8 +184,6 @@
         function selectTariff(name, price) {
             selectedTariffName = name;
             selectedTariffPrice = price;
-            
-            // Kartalarning dizaynini o'zgartirish
             let cards = document.querySelectorAll('.tariff-card');
             cards.forEach(card => card.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -161,13 +201,29 @@
 
         function orderTaxi() {
             let destination = document.getElementById('destination').value;
-
             if(!destination) {
                 alert("Iltimos, borish manzilingizni kiriting!");
                 return;
             }
 
-            alert("Buyurtma qabul qilindi! 🎉\nTarif: " + selectedTariffName + "\nNarxi: " + selectedTariffPrice.toLocaleString() + " so'm\nHaydovchi qidirilmoqda...");
+            // Modal oynani ochish
+            document.getElementById('searchModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = "Haydovchi qidirilmoqda...";
+            document.getElementById('modalSpinner').style.display = 'block';
+            document.getElementById('modalText').innerText = "Tarif: " + selectedTariffName + " (" + selectedTariffPrice.toLocaleString() + " so'm)\nKuting...";
+            document.getElementById('cancelBtn').style.display = 'block';
+
+            // 3 sekunddan keyin guyo haydovchi topilgandek qilamiz
+            setTimeout(function() {
+                document.getElementById('modalSpinner').style.display = 'none';
+                document.getElementById('modalTitle').innerText = "Haydovchi topildi! 🎉";
+                document.getElementById('modalText').innerHTML = "<b>Haydovchi:</b> Anvar aka<br><b>Mashina:</b> Nexia 3 (Oq)<br><b>Raqam:</b> 01 A 777 BA<br><br>Haydovchi yo'lga chiqdi!";
+                document.getElementById('cancelBtn').innerText = "Yopish";
+            }, 3500);
+        }
+
+        function closeModal() {
+            document.getElementById('searchModal').style.display = 'none';
         }
     </script>
 
