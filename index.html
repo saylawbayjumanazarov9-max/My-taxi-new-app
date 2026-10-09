@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Taxi - VIP Ultimate</title>
+    <title>My Taxi - VIP</title>
     <!-- Leaflet Xarita CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
@@ -43,14 +43,13 @@
             border-top-right-radius: 24px;
             box-shadow: 0 -6px 20px rgba(0,0,0,0.1);
             z-index: 1000;
-            max-height: 55vh;
+            max-height: 52vh;
             overflow-y: auto;
         }
-        /* Tezkor manzillar (Uy / Ish) */
         .quick-destinations {
             display: flex;
             gap: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .quick-btn {
             flex: 1;
@@ -62,4 +61,295 @@
             color: #800020;
             font-weight: 600;
             cursor: pointer;
-            
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 11px;
+            color: #666;
+            font-weight: 600;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            background: #fdfdfd;
+        }
+        .input-group input:focus {
+            border-color: #800020;
+            background: #fff;
+        }
+        .search-hint {
+            font-size: 10px;
+            color: #888;
+            margin-top: 2px;
+        }
+        .tariffs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .tariff-card {
+            flex: 1;
+            border: 2px solid #e0e0e0;
+            padding: 8px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            background: #fff;
+        }
+        .tariff-card.active {
+            border-color: #800020;
+            background-color: #fdf2f4;
+        }
+        .tariff-card h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+            color: #800020;
+        }
+        .tariff-card p {
+            font-size: 11px;
+            color: #555;
+            font-weight: bold;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .pay-card {
+            flex: 1;
+            border: 1px solid #ddd;
+            padding: 6px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 12px;
+            cursor: pointer;
+            background: #f9f9f9;
+        }
+        .pay-card.active {
+            border-color: #800020;
+            background-color: #fdf2f4;
+            color: #800020;
+            font-weight: bold;
+        }
+        .btn {
+            width: 100%;
+            background-color: #800020;
+            color: #fff;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 330px;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #800020;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>🚗 My Taxi VIP</header>
+
+    <!-- Xarita -->
+    <div id="map"></div>
+
+    <!-- Boshqaruv Paneli -->
+    <div class="panel">
+        <div class="quick-destinations">
+            <div class="quick-btn" onclick="setDestination('Universitet')">🏠 Uy / Universitet</div>
+            <div class="quick-btn" onclick="setDestination('Bozor Markazi')">🏢 Bozor Markazi</div>
+        </div>
+
+        <div class="input-group">
+            <label>Qayerdan (Ketish nuqtasi)</label>
+            <input type="text" id="pickup" placeholder="Ko'cha nomi..." onchange="searchLocation('pickup')">
+            <div class="search-hint">Manzilni yozib, boshqa joyga bosing</div>
+        </div>
+        <div class="input-group">
+            <label>Qayerga (Borish manzili)</label>
+            <input type="text" id="destination" placeholder="Masalan: Bozor..." onchange="searchLocation('destination')">
+            <div class="search-hint">Manzilni yozib, boshqa joyga bosing</div>
+        </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="comment" placeholder="Eslatma (yukim bor)">
+            </div>
+            <div class="input-group" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="promocode" placeholder="Promo-kod (VIP2026)">
+            </div>
+        </div>
+
+        <label style="font-size: 12px; color: #555; margin-bottom: 4px; display: block; font-weight: 600;">Tarif:</label>
+        <div class="tariffs">
+            <div class="tariff-card active" onclick="selectTariff('Ekonom')">
+                <h4>Ekonom</h4>
+                <p>10,000 so'm</p>
+            </div>
+            <div class="tariff-card" onclick="selectTariff('Komfort')">
+                <h4>Komfort</h4>
+                <p>18,000 so'm</p>
+            </div>
+        </div>
+
+        <label style="font-size: 12px; color: #555; margin-bottom: 4px; display: block; font-weight: 600;">To'lov:</label>
+        <div class="payment-methods">
+            <div class="pay-card active" onclick="selectPayment('Naqd pul', this)">💵 Naqd pul</div>
+            <div class="pay-card" onclick="selectPayment('Karta', this)">💳 Karta orqali</div>
+        </div>
+
+        <button class="btn" onclick="orderTaxi()">Mashina chaqirish</button>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <h3 id="modalTitle" style="color: #800020; margin-bottom: 5px;">Haydovchi qidirilmoqda...</h3>
+            <div class="spinner" id="modalSpinner"></div>
+            <p id="modalText" style="font-size: 13px; color: #666; margin-top: 8px;">Kuting...</p>
+            <button class="btn" id="cancelBtn" onclick="closeModal()" style="margin-top: 15px; background: #eee; color: #333; padding: 12px;">Bekor qilish</button>
+        </div>
+    </div>
+
+    <!-- Leaflet JS Kutubxonasi -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let selectedTariffName = "Ekonom";
+        let selectedPaymentMethod = "Naqd pul";
+
+        // Xaritani ishga tushirish
+        let map = L.map('map').setView([42.4619, 59.6166], 14);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© My Taxi VIP'
+        }).addTo(map);
+
+        let marker = L.marker([42.4619, 59.6166]).addTo(map)
+            .bindPopup('Tanlangan manzil')
+            .openPopup();
+
+        // Xarita o'lchamini to'g'rilash (oq ekran chiqishining oldini oladi)
+        setTimeout(function() {
+            map.invalidateSize();
+        }, 500);
+
+        function setDestination(placeName) {
+            document.getElementById('destination').value = placeName;
+            searchLocation('destination');
+        }
+
+        function searchLocation(inputId) {
+            let query = document.getElementById(inputId).value;
+            if (!query) return;
+
+            let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ", Nukus, Uzbekistan")}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.length > 0) {
+                        let lat = data[0].lat;
+                        let lon = data[0].lon;
+                        map.setView([lat, lon], 16);
+                        marker.setLatLng([lat, lon]);
+                        document.getElementById(inputId).value = data[0].name || query;
+                    } else {
+                        alert("Bunday manzil topilmadi.");
+                    }
+                })
+                .catch(err => console.log(err));
+        }
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+        });
+
+        function selectTariff(name) {
+            selectedTariffName = name;
+            let cards = document.querySelectorAll('.tariff-card');
+            cards.forEach(card => card.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        function selectPayment(method, element) {
+            selectedPaymentMethod = method;
+            let cards = document.querySelectorAll('.pay-card');
+            cards.forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function orderTaxi() {
+            let destination = document.getElementById('destination').value;
+            let promocode = document.getElementById('promocode').value.trim();
+            if(!destination) {
+                alert("Iltimos, borish manzilingizni kiriting!");
+                return;
+            }
+
+            let price = (selectedTariffName === 'Ekonom') ? 10000 : 18000;
+            if (promocode === "VIP2026") {
+                price = Math.round(price * 0.8);
+            }
+
+            document.getElementById('searchModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = "Haydovchi qidirilmoqda...";
+            document.getElementById('modalSpinner').style.display = 'block';
+            document.getElementById('modalText').innerText = "Tarif: " + selectedTariffName + " (" + price.toLocaleString() + " so'm)\nKuting...";
+            document.getElementById('cancelBtn').style.display = 'block';
+
+            setTimeout(function() {
+                document.getElementById('modalSpinner').style.display = 'none';
+                document.getElementById('modalTitle').innerText = "Haydovchi topildi! 🎉";
+                document.getElementById('modalText').innerHTML = "<b>Haydovchi:</b> Timur aka<br><b>Mashina:</b> Gentra (Oq)<br><b>To'lov:</b> " + selectedPaymentMethod + "<br><br>⏳ <b>3 daqiqada yetib keladi.</b>";
+                document.getElementById('cancelBtn').innerText = "Yopish";
+                document.getElementById('cancelBtn').style.background = "#800020";
+                document.getElementById('cancelBtn').style.color = "#fff";
+            }, 3500);
+        }
+
+        function closeModal() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
